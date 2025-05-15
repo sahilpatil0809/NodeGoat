@@ -42,10 +42,16 @@ jobs:
           unzip dependency-check-7.4.0-release.zip
           npm install  # <-- Ensure node_modules exists
           ./dependency-check/bin/dependency-check.sh -s . -f JSON -o ./dc-report --disableAssembly
-
+    
       - name: Build Docker image
         run: docker build -t my-app:${{ github.sha }} .
+        
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+      - name: Push Image to DockerHub
+        run: docker push my-app:${{ github.sha }}
+      
       - name: Scan with Trivy
         uses: aquasecurity/trivy-action@master
         with:
