@@ -70,10 +70,12 @@ jobs:
           chmod +x /usr/local/bin/cosign
 
       - name: Sign Docker image with Cosign
-        run: cosign sign --key env://COSIGN_PRIVATE_KEY ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
         env:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
       
       - name: Trigger Jenkins Job
         uses: appleboy/jenkins-action@master
