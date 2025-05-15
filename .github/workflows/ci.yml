@@ -1,0 +1,44 @@
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Semgrep Scan
+      uses: returntocorp/semgrep-action@v1
+
+    - name: Dependency Check (OWASP)
+      run: |
+        docker run --rm -v $(pwd):/src owasp/dependency-check --project "MyApp" --scan /src
+
+    - name: Checkov Scan
+      uses: bridgecrewio/checkov-action@master
+
+    - name: Build Docker Image
+      run: docker build -t myapp:latest .
+
+    - name: Trivy Image Scan
+      run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image myapp:latest
+
+    - name: Generate SBOM (Syft)
+      run: syft myapp:latest -o spdx-json > sbom.spdx.json
+
+    - name: Sign Image and SBOM (Cosign)
+      run: |
+        cosign sign --key env://COSIGN_KEY myapp:latest
+        cosign attach sbom --sbom sbom.spdx.json myapp:latest
+
+    - name: Publish SBOM to Rekor
+      run: cosign upload sbom --rekor-url https://rekor.sigstore.dev myapp:latest
+
+    - name: Push Image to ECR/DockerHub
+      run: docker push myrepo/myapp:latest
+
+    - name: Trigger Jenkins CD Job
+      uses: appleboy/jenkins-action@master
+      with:
+        url: ${{ secrets.JENKINS_URL }}
+        user: ${{ secrets.JENKINS_USER }}
+        token: ${{ secrets.JENKINS_TOKEN }}
+        job: deploy-to-eks
