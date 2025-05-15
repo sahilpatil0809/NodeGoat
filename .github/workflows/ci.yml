@@ -4,13 +4,29 @@ on: [push, pull_request]
 jobs:
   build-test-sign:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write # Required for SARIF upload
+
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
+      - name: Set up Python (for Semgrep)
+        uses: actions/setup-python@v4
         with:
-          config: "p/default"
+          python-version: '3.x'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep and generate reports
+        run: |
+          semgrep --config p/default --json > semgrep-report.json
+          semgrep --config p/default --sarif > semgrep-report.sarif
+
+      - name: Upload Semgrep SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: semgrep-report.sarif
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
