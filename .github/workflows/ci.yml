@@ -49,8 +49,7 @@ jobs:
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Push Image to DockerHub
-        run: docker push my-app:${{ github.sha }}
+    
       
       - name: Scan with Trivy
         uses: aquasecurity/trivy-action@master
@@ -66,7 +65,7 @@ jobs:
       - name: Sign Image
         run: cosign sign --key env://COSIGN_PRIVATE_KEY my-app:${{ github.sha }}
 
-      - name: Push Image to ECR or DockerHub
+      - name: Push Image to DockerHub
         run: docker push my-app:${{ github.sha }}
 
       - name: Trigger Jenkins Job
