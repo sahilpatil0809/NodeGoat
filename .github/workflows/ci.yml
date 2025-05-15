@@ -50,6 +50,9 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: my-app:${{ github.sha }}
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Generate SBOM
         run: syft my-app:${{ github.sha }} -o spdx-json > sbom.json
