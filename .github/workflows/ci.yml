@@ -44,11 +44,10 @@ jobs:
           ./dependency-check/bin/dependency-check.sh -s . -f JSON -o ./dc-report --disableAssembly
     
       - name: Build Docker image
-        run: docker build -t my-app:${{ github.sha }} .
-        
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }} .
+
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
     
       
       - name: Scan with Trivy
@@ -60,14 +59,14 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Generate SBOM
-        run: syft my-app:${{ github.sha }} -o spdx-json > sbom.json
+        run: syft ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }} -o spdx-json > sbom.json
 
       - name: Sign Image
-        run: cosign sign --key env://COSIGN_PRIVATE_KEY my-app:${{ github.sha }}
+        run: cosign sign --key env://COSIGN_PRIVATE_KEY ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
 
       - name: Push Image to DockerHub
-        run: docker push my-app:${{ github.sha }}
-
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
+      
       - name: Trigger Jenkins Job
         uses: appleboy/jenkins-action@master
         with:
