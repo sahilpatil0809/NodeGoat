@@ -16,3 +16,7 @@ COPY --chown=node . $WORKDIR
 # Then all further actions including running the containers should be done under non-root user.
 USER $USER
 EXPOSE 4000
+EXPOSE 4000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:4000/health || exit 1
