@@ -40,7 +40,8 @@ jobs:
         run: |
           curl -LO https://github.com/jeremylong/DependencyCheck/releases/download/v7.4.0/dependency-check-7.4.0-release.zip
           unzip dependency-check-7.4.0-release.zip
-          ./dependency-check/bin/dependency-check.sh -s . -f JSON -o ./dc-report
+          npm install  # <-- Ensure node_modules exists
+          ./dependency-check/bin/dependency-check.sh -s . -f JSON -o ./dc-report --disableAssembly
 
       - name: Build Docker image
         run: docker build -t my-app:${{ github.sha }} .
