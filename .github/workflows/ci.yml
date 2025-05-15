@@ -1,44 +1,47 @@
+name: CI Pipeline
+on: [push, pull_request]
+
 jobs:
-  build:
+  build-test-sign:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-    - name: Semgrep Scan
-      uses: returntocorp/semgrep-action@v1
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: "p/default"
 
-    - name: Dependency Check (OWASP)
-      run: |
-        docker run --rm -v $(pwd):/src owasp/dependency-check --project "MyApp" --scan /src
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
 
-    - name: Checkov Scan
-      uses: bridgecrewio/checkov-action@master
+      - name: Dependency Scan
+        run: |
+          curl -LO https://github.com/jeremylong/DependencyCheck/releases/download/v7.4.0/dependency-check-7.4.0-release.zip
+          unzip dependency-check-7.4.0-release.zip
+          ./dependency-check/bin/dependency-check.sh -s . -f JSON -o ./dc-report
 
-    - name: Build Docker Image
-      run: docker build -t myapp:latest .
+      - name: Build Docker image
+        run: docker build -t my-app:${{ github.sha }} .
 
-    - name: Trivy Image Scan
-      run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image myapp:latest
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: my-app:${{ github.sha }}
 
-    - name: Generate SBOM (Syft)
-      run: syft myapp:latest -o spdx-json > sbom.spdx.json
+      - name: Generate SBOM
+        run: syft my-app:${{ github.sha }} -o spdx-json > sbom.json
 
-    - name: Sign Image and SBOM (Cosign)
-      run: |
-        cosign sign --key env://COSIGN_KEY myapp:latest
-        cosign attach sbom --sbom sbom.spdx.json myapp:latest
+      - name: Sign Image
+        run: cosign sign --key env://COSIGN_PRIVATE_KEY my-app:${{ github.sha }}
 
-    - name: Publish SBOM to Rekor
-      run: cosign upload sbom --rekor-url https://rekor.sigstore.dev myapp:latest
+      - name: Push Image to ECR or DockerHub
+        run: docker push my-app:${{ github.sha }}
 
-    - name: Push Image to ECR/DockerHub
-      run: docker push myrepo/myapp:latest
-
-    - name: Trigger Jenkins CD Job
-      uses: appleboy/jenkins-action@master
-      with:
-        url: ${{ secrets.JENKINS_URL }}
-        user: ${{ secrets.JENKINS_USER }}
-        token: ${{ secrets.JENKINS_TOKEN }}
-        job: deploy-to-eks
+      - name: Trigger Jenkins Job
+        uses: appleboy/jenkins-action@master
+        with:
+          url: ${{ secrets.JENKINS_URL }}
+          user: ${{ secrets.JENKINS_USER }}
+          token: ${{ secrets.JENKINS_API_TOKEN }}
+          job: "deploy-to-eks"
