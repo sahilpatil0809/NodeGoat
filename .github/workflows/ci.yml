@@ -67,8 +67,12 @@ jobs:
             -o /usr/local/bin/cosign
           chmod +x /usr/local/bin/cosign
 
-      - name: Sign Image
+      - name: Sign Docker image with Cosign
         run: cosign sign --key env://COSIGN_PRIVATE_KEY ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
 
       - name: Push Image to DockerHub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
