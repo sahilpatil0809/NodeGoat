@@ -84,3 +84,5 @@ jobs:
           user: ${{ secrets.JENKINS_USER }}
           token: ${{ secrets.JENKINS_API_TOKEN }}
           job: "deploy-to-eks"
+          parameters: |
+            IMAGE_TAG=${{ github.sha }}      
