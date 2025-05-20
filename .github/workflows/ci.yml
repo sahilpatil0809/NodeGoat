@@ -63,6 +63,12 @@ jobs:
 
       - name: Generate SBOM
         run: syft ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }} -o spdx-json > sbom.json
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.json
+
       - name: Install Cosign
         run: |
           curl -sSfL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 \
