@@ -18,5 +18,5 @@ spec:
         - name: my-app-container
           image: sahilpatil0809/my-app:latest  # This will be updated in CI/CD
           ports:
-            - containerPort: 80
+            - containerPort: 4000
 
