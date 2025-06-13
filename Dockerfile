@@ -5,7 +5,7 @@ COPY package*.json $WORKDIR
 RUN npm install --production --no-cache
 
 FROM node:12-alpine
-ENV USER node
+ENV USER node 
 ENV WORKDIR /home/$USER/app
 WORKDIR $WORKDIR
 COPY --from=0 /usr/src/app/node_modules node_modules
