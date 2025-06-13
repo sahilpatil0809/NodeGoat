@@ -19,4 +19,3 @@ spec:
           image: sahilpatil0809/my-app:latest  # This will be updated in CI/CD
           ports:
             - containerPort: 4000
-
