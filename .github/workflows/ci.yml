@@ -92,5 +92,5 @@ jobs:
           job: "deploy-to-eks"
           parameters: |
             IMAGE_TAG=${{ github.sha }}
-            EC2_PUBLIC_IP=13.200.226.153
+            
 
