@@ -10,7 +10,7 @@ spec:
     matchLabels: 
       app: my-app
   template:  
-    metadata:
+    metadata: 
       labels:
         app: my-app
     spec:
