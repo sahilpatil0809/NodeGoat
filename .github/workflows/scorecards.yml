@@ -2,31 +2,39 @@ name: Scorecards supply-chain security
 
 on:
   schedule:
-    - cron: '*/10 * * * *' # Runs every Saturday at 01:30 UTC
+    - cron: '*/10 * * * *' # Every Saturday at 01:30 UTC
   workflow_dispatch:      # Allow manual trigger
 
-permissions:
-  security-events: write   # Needed to upload SARIF
-  id-token: write          # For provenance (optional)
-  contents: read
+# 👇 Default to read-only, required by Scorecard verification
+permissions: read-all
 
 jobs:
   analysis:
     name: Scorecards analysis
     runs-on: ubuntu-latest
+    permissions:
+      # 👇 Grant write only where needed
+      security-events: write   # Needed to upload SARIF
+      id-token: write          # For provenance (optional)
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Scorecards
+      - name: Run Scorecards (SARIF + JSON)
         uses: ossf/scorecard-action@v2.4.0
         with:
-          results_file: results.sarif
-          results_format: sarif
+          results_file: results.json
+          results_format: json
           publish_results: true
         continue-on-error: true
 
-      - name: Upload results to GitHub Security tab
+      - name: Extract Score from JSON
+        run: |
+          SCORE=$(jq '.score' results.json)
+          echo "🔐 Repository Security Score: $SCORE / 10"
+
+      - name: Upload SARIF results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: results.sarif
+          sarif_file: results.json
