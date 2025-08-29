@@ -21,12 +21,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Scorecards (SARIF + JSON)
+      # ✅ Run Scorecards for SARIF (for GitHub Security tab)
+      - name: Run Scorecards (SARIF)
+        uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+        continue-on-error: true
+
+      - name: Upload SARIF results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+      # ✅ Run Scorecards for JSON (for score extraction)
+      - name: Run Scorecards (JSON)
         uses: ossf/scorecard-action@v2.4.0
         with:
           results_file: results.json
           results_format: json
-          publish_results: true
+          publish_results: false
         continue-on-error: true
 
       - name: Extract Score from JSON
@@ -34,7 +49,9 @@ jobs:
           SCORE=$(jq '.score' results.json)
           echo "🔐 Repository Security Score: $SCORE / 10"
 
-      - name: Upload SARIF results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+      # (Optional) Upload JSON as artifact for download/debugging
+      - name: Upload results.json artifact
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: results.json
+          name: scorecard-json
+          path: results.json
