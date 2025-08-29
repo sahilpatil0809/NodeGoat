@@ -2,7 +2,7 @@ name: Scorecards supply-chain security
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Runs every Saturday at 01:30 UTC
+    - cron: '*/10 * * * *' # Runs every Saturday at 01:30 UTC
   workflow_dispatch:      # Allow manual trigger
 
 permissions:
