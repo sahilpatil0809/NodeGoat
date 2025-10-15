@@ -75,13 +75,17 @@ jobs:
           curl -sSfL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o /usr/local/bin/cosign
           chmod +x /usr/local/bin/cosign
 
+      - name: Get image digest
+        id: digest
+        run: echo "DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }})" >> $GITHUB_ENV
+
       - name: Sign Docker image with Cosign
         run: |
-          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY $DIGEST
         env:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        continue-on-error: true
+
 
       - name: Trigger Jenkins Job
         uses: appleboy/jenkins-action@master
