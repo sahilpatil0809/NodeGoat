@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-app-deployment   
-  namespace: supply-chain 
+  namespace: supply-chain  
 spec:
   replicas: 1  
   selector: 
