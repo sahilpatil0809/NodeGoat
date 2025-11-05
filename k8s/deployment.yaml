@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: my-app-container
-          image: sahilpatil0809/my-app:latest  # This will be updated in CI/CD
+          image: devopssahil/my-app:126f49a7d01b563ec292b0dc9823fd1f6aa81fd4
           ports:
             - containerPort: 4000   
