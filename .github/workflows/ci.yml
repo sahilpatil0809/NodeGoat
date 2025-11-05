@@ -1,7 +1,13 @@
 name: CI Pipeline
 
-on: [push, pull_request]
-
+on:
+  push:
+    branches:
+      - master
+    # 👇 This line is the key fix: ignores changes made by Jenkins to k8s manifests
+    paths-ignore:
+      - 'k8s/**'
+  pull_request:
 permissions:
   contents: read
   actions: read
