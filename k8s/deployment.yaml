@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: my-app-container
-          image: devopssahil/my-app:f1ef978a3a44950cd61e4450b338f361c3c7196e
+          image: devopssahil/my-app:c9d7184b15aab5050fa91bd884ab4b1c1714abb2
           ports:
             - containerPort: 4000   
